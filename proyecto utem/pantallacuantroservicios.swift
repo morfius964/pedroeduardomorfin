@@ -14,8 +14,15 @@ class Pantalla4Servicios: UIViewController {
         return lbl
     }()
 
-    // MARK: - Función para crear botones con gradiente
-    private func crearBoton(titulo: String, colores: [UIColor]) -> UIButton {
+    // MARK: - Enum para tipos de servicio
+    enum TipoServicio: Int {
+        case instalacion = 1
+        case mantenimiento = 2
+        case reparacion = 3
+    }
+
+    // MARK: - Función para crear botones con gradiente y tipo de servicio
+    private func crearBoton(titulo: String, colores: [UIColor], tipoServicio: TipoServicio) -> UIButton {
         let btn = UIButton(type: .system)
         btn.setTitle(titulo, for: .normal)
         btn.setTitleColor(.white, for: .normal)
@@ -23,6 +30,7 @@ class Pantalla4Servicios: UIViewController {
         btn.layer.cornerRadius = 12
         btn.clipsToBounds = true
         btn.translatesAutoresizingMaskIntoConstraints = false
+        btn.tag = tipoServicio.rawValue // Asocia el tipo de servicio con el botón
         
         // Gradiente
         let gradient = CAGradientLayer()
@@ -36,10 +44,10 @@ class Pantalla4Servicios: UIViewController {
     }
 
     // MARK: - Botones de servicios
-    private lazy var botonInstalacion = crearBoton(titulo: "Instalación", colores: [UIColor.systemGreen, UIColor.systemTeal])
-    private lazy var botonMantenimiento = crearBoton(titulo: "Mantenimiento", colores: [UIColor.systemOrange, UIColor.systemYellow])
-    private lazy var botonReparacion = crearBoton(titulo: "Reparación", colores: [UIColor.systemRed, UIColor.systemPink])
-    private lazy var botonMisServicios = crearBoton(titulo: "Mis Servicios", colores: [UIColor.systemBlue, UIColor.systemTeal])
+    private lazy var botonInstalacion = crearBoton(titulo: "Instalación", colores: [UIColor.systemGreen, UIColor.systemTeal], tipoServicio: .instalacion)
+    private lazy var botonMantenimiento = crearBoton(titulo: "Mantenimiento", colores: [UIColor.systemOrange, UIColor.systemYellow], tipoServicio: .mantenimiento)
+    private lazy var botonReparacion = crearBoton(titulo: "Reparación", colores: [UIColor.systemRed, UIColor.systemPink], tipoServicio: .reparacion)
+    private lazy var botonMisServicios = crearBoton(titulo: "Mis Servicios", colores: [UIColor.systemBlue, UIColor.systemTeal], tipoServicio: .reparacion)
 
     // MARK: - Etiquetas de precio
     private let instalacionPrecioLabel: UILabel = {
@@ -175,12 +183,20 @@ class Pantalla4Servicios: UIViewController {
 
     // MARK: - Navegación
     @objc private func irADetalleServicios(_ sender: UIButton) {
+        guard let tipoServicio = TipoServicio(rawValue: sender.tag) else { return }
         let nombreServicio = sender.titleLabel?.text ?? "Servicio"
-//        let pantalla5 = Pantalla5DetalleServiciosCliente()
-//        pantalla5.servicioSeleccionado = nombreServicio
-//        navigationController?.pushViewController(pantalla5, animated: true)
-        
-        let pantalla5 = UIViewController()
+        var costo = "-"
+        switch tipoServicio {
+        case .instalacion:
+            costo = instalacionPrecioLabel.text?.replacingOccurrences(of: "Precio: ", with: "") ?? "-"
+        case .mantenimiento:
+            costo = mantenimientoPrecioLabel.text?.replacingOccurrences(of: "Precio: ", with: "") ?? "-"
+        case .reparacion:
+            costo = reparacionPrecioLabel.text?.replacingOccurrences(of: "Precio: ", with: "") ?? "-"
+        }
+        let pantalla5 = Pantalla5DetalleServicioCliente()
+        pantalla5.tipoServicio = tipoServicio
+        pantalla5.costoServicio = costo
         navigationController?.pushViewController(pantalla5, animated: true)
     }
 
@@ -212,4 +228,3 @@ class Pantalla4Servicios: UIViewController {
         mapItem.openInMaps(launchOptions: options)
     }
 }
-
